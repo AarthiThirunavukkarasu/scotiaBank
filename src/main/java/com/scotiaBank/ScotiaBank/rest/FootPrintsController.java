@@ -4,13 +4,16 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.scotiaBank.ScotiaBank.Entity.AccountHistory;
 import com.scotiaBank.ScotiaBank.Entity.UserLog;
 import com.scotiaBank.ScotiaBank.Service.AccountHistoryService;
 import com.scotiaBank.ScotiaBank.Service.UserLogService;
-@RestController("/api/")
+@RestController
+@RequestMapping("/api/")
 public class FootPrintsController {
 	@Autowired
 	UserLogService userLogService;
@@ -27,7 +30,7 @@ public class FootPrintsController {
 
 	
 	@GetMapping("/accountHistory")
-	public List<UserLog> searchAccountHistory(@RequestParam long accountID){
+	public List<AccountHistory> searchAccountHistory(@RequestParam long accountID){
 		return accountHistoryService.getAccountLog(accountID);
 	}
 }

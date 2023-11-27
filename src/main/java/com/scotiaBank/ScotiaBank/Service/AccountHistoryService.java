@@ -14,7 +14,7 @@ public interface AccountHistoryService {
 
 	void insertAccountLog(AccountHistory accountHistory);
 
-	List<UserLog> getAccountLog(long accountID);
+	List<AccountHistory> getAccountLog(long accountID);
 
 	void insertAccountLog(long accountId, long currentTimeMillis, String string);
 }

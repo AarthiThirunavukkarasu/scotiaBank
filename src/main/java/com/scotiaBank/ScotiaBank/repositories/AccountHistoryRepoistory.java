@@ -15,6 +15,6 @@ public interface AccountHistoryRepoistory extends JpaRepository<AccountHistory, 
 
 
 
-	List<UserLog> findAllByAccountID(long accountid);
+	List<AccountHistory> findAllByAccountID(long accountid);
 
 }

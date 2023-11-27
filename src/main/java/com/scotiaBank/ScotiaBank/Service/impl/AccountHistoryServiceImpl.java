@@ -24,7 +24,7 @@ public class AccountHistoryServiceImpl implements AccountHistoryService{
 	}
 	
 	@Override
-	public List<UserLog> getAccountLog(long accountid) {
+	public List<AccountHistory> getAccountLog(long accountid) {
 		return accountHistoryRepoistory.findAllByAccountID(accountid);
 		
 	}
