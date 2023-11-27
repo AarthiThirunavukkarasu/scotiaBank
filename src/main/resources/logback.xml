@@ -1,0 +1,44 @@
+<!-- logback.xml -->
+
+<configuration>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Include package name in the log output -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/myapp.log</file>
+        <encoder>
+            <!-- Include package name in the log output -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <appender name="Audit_log" class="ch.qos.logback.core.FileAppender">
+        <file>logs/audit.log</file>
+        <encoder>
+            <!-- Include package name in the log output -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+    <logger name="com.scotiaBank.ScotiaBank.Service" level="info">
+        <appender-ref ref="Audit_log" />
+    </logger>
+    <!-- Log level for com.example.package1 -->
+    <logger name="com.scotiaBank.ScotiaBank" level="DEBUG"/>
+
+    <!-- Log level for com.example.package2 -->
+    <logger name="org.springframework" level="ERROR"/>
+
+</configuration>
