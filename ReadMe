@@ -1,1 +1,197 @@
 
+import React, { useState, useEffect } from 'react';
+import Editor from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
+import { ClockLoader as Loader } from 'react-spinners';
+const SyntaxHighlightedInput = () => {
+  const [code, setCode] = useState(`<!DOCTYPE html>
+<html lang="en">
+<body>
+Hello $customerName 
+</body>
+</html>`);
+const [errorDecorations, setErrorDecorations] = useState([]);
+const [loading, setLoading] = useState(false);
+useEffect(() => {
+    // Register the HTML language
+    monaco.languages.register({ id: 'velocity' });
+
+    // Define the tokenization rules for Velocity variables
+    monaco.languages.setMonarchTokensProvider('velocity', {
+      tokenizer: {
+        root: [
+          [/\$[a-zA-Z_][\w]*/, 'variable.velocity'] // Match Velocity variables
+        ]
+      }
+    });
+    monaco.languages.register({ id: 'html' });
+    
+    // Define the language configuration for HTML
+    monaco.languages.setLanguageConfiguration('html', {
+      autoClosingPairs: [
+        { open: '<', close: '>' },
+        { open: '"', close: '"', notIn: ['string'] },
+        { open: "'", close: "'", notIn: ['string', 'comment'] },
+        { open: '{', close: '}', notIn: ['string', 'comment'] }
+      ],
+      brackets: [
+        ['<', '>'],
+        ['{', '}'],
+        ['[', ']']
+      ],
+      comments: {
+        lineComment: '//',
+        blockComment: ['<!--', '-->']
+      }
+    });
+    monaco.languages.registerCompletionItemProvider('html', {
+        provideCompletionItems: (model, position) => {
+          const lineContent = model.getLineContent(position.lineNumber);
+          const cursorColumn = position.column;
+  
+          // Check if the cursor is within a Velocity context
+          if (lineContent.includes('$') && cursorColumn > lineContent.indexOf('$')) {
+            // Implement your Velocity completion logic here
+            return [
+              {
+                label: 'VelocityVariable',
+                kind: monaco.languages.CompletionItemKind.Variable,
+                insertText: 'VelocityVariable'
+              }
+            ];
+          }
+  
+          // If not in a Velocity context, return no completion items
+          return [];
+        }
+        
+      });
+     
+  }, []);
+
+const handleEditorDidMount = (editor, monaco) => {
+ 
+
+    // Define a custom theme with different colors for Velocity variables
+    monaco.editor.defineTheme('custom-theme', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'variable.velocity', foreground: 'red' } // Style Velocity variables with red color
+      ]
+    });
+
+    // Set the custom theme for the editor
+    editor.updateOptions({ theme: 'custom-theme' });
+    editor.onDidChangeModelContent(() => {
+        const markers = monaco.editor.getModelMarkers({ resource: editor.getModel().uri.toString() });
+        const syntaxErrors = markers.filter(marker => marker.severity === monaco.MarkerSeverity.Error);
+        if (syntaxErrors.length > 0) {
+          console.log('Syntax errors detected:', syntaxErrors);
+        } else {
+          console.log('No syntax errors detected.');
+        }
+
+      const position = editor.getPosition();
+      const suggestions = getAutoFillSuggestions(position);
+      editor.trigger('custom', 'editor.action.triggerSuggest', { suggestions });
+    });
+    const model = editor.getModel();
+     /* if (model) {
+        const htmlLanguageService = monaco.languages.html;
+
+        const htmlDocument = htmlLanguageService.parseHTMLDocument(model.getValue());
+        const syntaxErrors = htmlDocument.syntaxErrors;
+
+        const decorations = syntaxErrors.map(error => ({
+          range: {
+            startLineNumber: error.range.startLineNumber,
+            endLineNumber: error.range.startLineNumber,
+            startColumn: error.range.startColumn,
+            endColumn: error.range.endColumn
+          },
+          options: {
+            isWholeLine: false,
+            className: 'syntax-error-decoration',
+            glyphMarginClassName: 'syntax-error-glyph-margin'
+          }
+        }));
+
+        editor.deltaDecorations([], decorations);
+       // setLoading(false);
+      }*/
+
+  
+      editor.onDidChangeModelContent(() => {
+        // Implement validation logic here
+      });
+      if (model) {
+        monaco.languages.html.htmlDefaults.setDiagnosticsOptions({
+          validate: true,
+          schemas: [{
+
+            fileMatch: ['*'],
+            schema: {
+              type: 'object',
+              properties: {
+                body: {
+                  type: 'object',
+                  required: ['description'],
+                  properties: {
+                    description: {
+                      type: 'string'
+                    }
+                  }
+                }
+              },
+              required: ['body'],
+              additionalProperties: false
+            }
+          }]
+        });
+    }
+  };
+
+  const getAutoFillSuggestions = (position, text) => {
+    const wordAtCursor = getWordAtPosition(position, text);
+    if (!wordAtCursor) return [];
+  
+    // Example: Return suggestions based on the word at the cursor position
+    const suggestions = [
+      {
+        label: `suggestion1_${wordAtCursor}`,
+        kind: monaco.languages.CompletionItemKind.Keyword,
+        insertText: `suggestion1_${wordAtCursor}`,
+      },
+      {
+        label: `suggestion2_${wordAtCursor}`,
+        kind: monaco.languages.CompletionItemKind.Keyword,
+        insertText: `suggestion2_${wordAtCursor}`,
+      },
+    ];
+  
+    return suggestions;
+  };
+  
+  const getWordAtPosition = (position, text) => {
+    const line = text.split('\n')[position.lineNumber - 1];
+    const start = line.slice(0, position.column - 1).lastIndexOf(' ') + 1;
+    const end = line.slice(position.column - 1).indexOf(' ');
+  
+    return line.slice(start, end === -1 ? undefined : position.column + end - 1);
+  };
+  return (
+    <Editor
+      height="300px"
+      defaultLanguage="javascript"
+      theme="vs-dark"
+      defaultValue={code}
+      loading = {<Loader />}
+      onChange={(value) => setCode(value)}
+      editorDidMount={handleEditorDidMount}
+    />
+  
+  );
+};
+
+export default SyntaxHighlightedInput;
